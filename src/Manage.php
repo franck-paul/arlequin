@@ -19,6 +19,7 @@ use Dotclear\Helper\Html\Form\Submit;
 use Dotclear\Helper\Html\Form\Text;
 use Dotclear\Helper\Html\Form\Textarea;
 use Dotclear\Helper\Html\Html;
+use Dotclear\Interface\Core\BlogWorkspaceInterface;
 use Exception;
 
 /**
@@ -45,17 +46,20 @@ class Manage
         }
 
         try {
-            $s = My::settings();
+            $settings = My::settings();
 
-            $model   = json_decode((string) $s->get('model'), true);
-            $exclude = $s->get('exclude');
+            /**
+             * @var array{name?: string, s_html?: string, e_html?: string, a_html?: string} $model
+             */
+            $model = is_string($model = $settings->get('model')) ? json_decode($model, true) : [];
+
+            $exclude = $settings->get('exclude');
 
             // initialize settings
-            $initialized = false;
-            if ($model === false || $exclude === null || !(isset($model['e_html']) && isset($model['a_html']) && isset($model['s_html']))) {
+            if ($model === [] || $exclude === null || !(isset($model['e_html']) && isset($model['a_html']) && isset($model['s_html']))) {
                 $model = My::defaultModel();
-                $s->put('model', json_encode($model), 'string', 'Arlequin configuration');
-                $s->put('exclude', 'customCSS', 'string', 'Excluded themes');
+                $settings->put('model', json_encode($model), BlogWorkspaceInterface::NS_STRING, 'Arlequin configuration');
+                $settings->put('exclude', 'customCSS', BlogWorkspaceInterface::NS_STRING, 'Excluded themes');
 
                 Notices::addSuccessNotice(__('Settings have been reinitialized.'));
                 App::blog()->triggerBlog();
@@ -71,8 +75,8 @@ class Manage
 
             // save settings
             if (isset($_POST['mt_action_config'])) {
-                $s->put('model', json_encode($model));
-                $s->put('exclude', $exclude);
+                $settings->put('model', json_encode($model), BlogWorkspaceInterface::NS_STRING);
+                $settings->put('exclude', $exclude, BlogWorkspaceInterface::NS_STRING);
 
                 Notices::addSuccessNotice(__('System settings have been updated.'));
                 App::blog()->triggerBlog();
@@ -81,15 +85,15 @@ class Manage
 
             // restore settings
             if (isset($_POST['mt_action_restore'])) {
-                $s->drop('model');
-                $s->drop('exclude');
+                $settings->drop('model');
+                $settings->drop('exclude');
 
                 Notices::addSuccessNotice(__('Settings have been reinitialized.'));
                 App::blog()->triggerBlog();
                 My::redirect(['restore' => 1]);
             }
-        } catch (Exception $e) {
-            App::error()->add($e->getMessage());
+        } catch (Exception $exception) {
+            App::error()->add($exception->getMessage());
         }
 
         return true;
@@ -101,41 +105,47 @@ class Manage
             return;
         }
 
+        $data = [
+            'msg' => [
+                'predefined_models' => Html::escapeJS(__('Predefined models')),
+                'select_model'      => Html::escapeJS(__('Select a model')),
+                'user_defined'      => Html::escapeJS(__('User defined')),
+            ],
+            'models' => [],
+        ];
+
         $models = new ArrayObject(My::distributedModels());
-
         App::behavior()->callBehavior('arlequinAddModels', $models);
-
         $models = iterator_to_array($models);
-        $s      = My::settings();
-        $model  = json_decode((string) $s->get('model'), true);
-        $model  = array_merge(My::defaultModel(), is_array($model) ? $model : []);
-        $header = '';
 
         foreach ($models as $m) {
             $m = array_merge(My::defaultModel(), $m);
-            $header .= "\t" .
-                'arlequin.addModel(' .
-                '"' . Html::escapeJS($m['name']) . '",' .
-                '"' . addcslashes($m['s_html'], "\n\"\'") . '",' .
-                '"' . addcslashes($m['e_html'], "\n\"\'") . '",' .
-                '"' . addcslashes($m['a_html'], "\n\"\'") . '"' .
-                ");\n";
+
+            $data['models'][] = [
+                'name'   => $m['name'],
+                's_html' => $m['s_html'],
+                'e_html' => $m['e_html'],
+                'a_html' => $m['a_html'],
+            ];
+        }
+
+        $settings = My::settings();
+
+        $excluded = is_string($excluded = $settings->get('exclude')) ? $excluded : '';
+
+        /**
+         * @var array{name?: string, s_html?: string, e_html?: string, a_html?: string} $model
+         */
+        $model = is_string($model = $settings->get('model')) ? json_decode($model, true) : [];
+
+        if ($model === []) {
+            $model = My::defaultModel();
         }
 
         Page::openModule(
             My::name(),
-            Page::jsLoad('models') . '
-            <script type="text/javascript">
-            //<![CDATA[
-            arlequin.msg.predefined_models = "' . Html::escapeJS(__('Predefined models')) . '";
-            arlequin.msg.select_model = "' . Html::escapeJS(__('Select a model')) . '";
-            arlequin.msg.user_defined = "' . Html::escapeJS(__('User defined')) . '";
-            $(function() {
-            	arlequin.addDefault();
-            ' . $header . '
-            });
-            //]]>
-            </script>'
+            Page::jsJson('arlequin', $data) .
+            My::jsLoad('models.js')
         );
 
         echo
@@ -145,38 +155,68 @@ class Manage
         ]) .
         Notices::getNotices() .
 
-        (new Form(My::id() . 'form'))->method('post')->action(App::backend()->getPageURL())->fields([
-            (new Text('h4', __('Switcher display format'))),
-            (new Div())->id('models'),
-            (new Div())->class('two-boxes odd')->items([
-                (new Para())->items([
-                    (new Label(__('Switcher HTML code:'), Label::OUTSIDE_LABEL_BEFORE))->for('s_html'),
-                    (new Textarea('s_html', Html::escapeHTML($model['s_html'])))->cols(50)->rows(10),
-                ]),
-            ]),
-            (new Div())->class('two-boxes even')->items([
-                (new Para())->items([
-                    (new Label(__('Item HTML code:'), Label::OUTSIDE_LABEL_BEFORE))->for('e_html'),
-                    (new Input('e_html'))->size(50)->maxlength(200)->value(Html::escapeHTML($model['e_html'])),
-                ]),
-                (new Para())->items([
-                    (new Label(__('Active item HTML code:'), Label::OUTSIDE_LABEL_BEFORE))->for('a_html'),
-                    (new Input('a_html'))->size(50)->maxlength(200)->value(Html::escapeHTML($model['a_html'])),
-                ]),
-            ]),
-            (new Div())->class('two-boxes odd')->items([
-                (new Para())->items([
-                    (new Label(__('Excluded themes:'), Label::OUTSIDE_LABEL_BEFORE))->for('exclude'),
-                    (new Input('exclude'))->size(50)->maxlength(200)->value(Html::escapeHTML($s->get('exclude'))),
-                ]),
-                (new Note())->class('form-note')->text('Semicolon separated list of themes IDs (theme folder name). Ex: ductile;berlin'),
-            ]),
-            (new Para())->separator(' ')->items([
-                (new Submit(['mt_action_config']))->value(__('Save')),
-                (new Submit(['mt_action_restore']))->value(__('Restore defaults')),
-                ... My::hiddenFields(),
-            ]),
-        ])->render();
+        (new Form(My::id() . 'form'))
+            ->method('post')
+            ->action(App::backend()->getPageURL())
+            ->fields([
+                (new Text('h4', __('Switcher display format'))),
+                (new Div())
+                    ->id('models'),
+                (new Div())
+                    ->items([
+                        (new Para())
+                            ->items([
+                                (new Label(__('Switcher HTML code:'), Label::OUTSIDE_LABEL_BEFORE))
+                                    ->for('s_html'),
+                                (new Textarea('s_html', Html::escapeHTML($model['s_html'])))
+                                    ->cols(60)
+                                    ->rows(10),
+                            ]),
+                        (new Para())
+                            ->items([
+                                (new Label(__('Item HTML code:'), Label::OUTSIDE_LABEL_BEFORE))
+                                    ->for('e_html'),
+                                (new Input('e_html'))
+                                    ->size(60)
+                                    ->maxlength(200)
+                                    ->value(Html::escapeHTML($model['e_html'])),
+                            ]),
+                        (new Para())
+                            ->items([
+                                (new Label(__('Active item HTML code:'), Label::OUTSIDE_LABEL_BEFORE))
+                                    ->for('a_html'),
+                                (new Input('a_html'))
+                                    ->size(60)
+                                    ->maxlength(200)
+                                    ->value(Html::escapeHTML($model['a_html'])),
+                            ]),
+                    ]),
+                (new Div())
+                    ->items([
+                        (new Para())
+                            ->items([
+                                (new Label(__('Excluded themes:'), Label::OUTSIDE_LABEL_BEFORE))
+                                    ->for('exclude'),
+                                (new Input('exclude'))
+                                    ->size(60)
+                                    ->maxlength(200)
+                                    ->value(Html::escapeHTML($excluded)),
+                            ]),
+                        (new Note())
+                            ->class('form-note')
+                            ->text(__('Semicolon separated list of themes IDs (theme folder name). Ex: ductile;berlin')),
+                    ]),
+                (new Para())
+                    ->separator(' ')
+                    ->items([
+                        (new Submit(['mt_action_config']))
+                            ->value(__('Save')),
+                        (new Submit(['mt_action_restore']))
+                            ->value(__('Restore defaults')),
+                        ... My::hiddenFields(),
+                    ]),
+            ])
+        ->render();
 
         Page::helpBlock('arlequin');
         Page::closeModule();

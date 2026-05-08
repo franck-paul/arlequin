@@ -1,32 +1,16 @@
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
 "Project-Id-Version: arlequin 1.5\n"
-"POT-Creation-Date: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-08 18:04+0200\n"
 "PO-Revision-Date: 2022-12-14T22:24:43+00:00\n"
 "Last-Translator: Jean-Crhistian Denis\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
-msgid "Theme switcher"
-msgstr "Sélecteur de thème"
-
-msgid "Choose a theme"
-msgstr "Choisissez un thème"
-
-msgid "Model name"
-msgstr "Nom du modèle"
-
-msgid "Bullets list"
-msgstr "Liste à puces"
-
-msgid "Scrolled list"
-msgstr "Liste déroulante"
-
-msgid "active theme"
-msgstr "thème actif"
 
 msgid "Settings have been reinitialized."
 msgstr "Les paramètres ont été réinitialisés."
@@ -52,18 +36,50 @@ msgstr "Code HTML d'un item :"
 msgid "Active item HTML code:"
 msgstr "Code HTML d'un item actif :"
 
-msgid "Excluded themes (separated by slashs '/'):"
-msgstr "Thèmes exclus (séparés par des slashs \"/\") :"
+msgid "Excluded themes:"
+msgstr "Thèmes exclus :"
 
-msgid "The names to be taken into account are those of the theme files."
-msgstr "Les noms à prendre en compte sont ceux des dossiers de thème."
+msgid "Semicolon separated list of themes IDs (theme folder name). Ex: ductile;berlin"
+msgstr "Liste d'identifiants (nom du dossier du thème) de thème séparés par des points-virgules. Ex : ductile,berlin"
+
+msgid "Save"
+msgstr "Enregistrer"
 
 msgid "Restore defaults"
 msgstr "Réinitialiser les paramètres"
 
-msgid "Arlequin - theme switcher configuration"
-msgstr "Arlequin - configuration du sélecteur de thème"
+msgid "Bullets list"
+msgstr "Liste à puces"
 
-msgid "Allows visitors choose a theme"
-msgstr "Permettre aux visiteurs de choisir un thème"
+msgid "Scrolled list"
+msgstr "Liste déroulante"
 
+msgid "ok"
+msgstr "ok"
+
+msgid "active theme"
+msgstr "thème actif"
+
+msgid "Default"
+msgstr "Défaut"
+
+msgid "Theme switcher"
+msgstr "Sélecteur de thème"
+
+msgid "Choose a theme"
+msgstr "Choisissez un thème"
+
+#~ msgid "Model name"
+#~ msgstr "Nom du modèle"
+
+#~ msgid "Excluded themes (separated by slashs '/'):"
+#~ msgstr "Thèmes exclus (séparés par des slashs \"/\") :"
+
+#~ msgid "The names to be taken into account are those of the theme files."
+#~ msgstr "Les noms à prendre en compte sont ceux des dossiers de thème."
+
+#~ msgid "Arlequin - theme switcher configuration"
+#~ msgstr "Arlequin - configuration du sélecteur de thème"
+
+#~ msgid "Allows visitors choose a theme"
+#~ msgstr "Permettre aux visiteurs de choisir un thème"
