@@ -1,0 +1,74 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dotclear 2 arlequin module\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-08 18:04+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Settings have been reinitialized."
+msgstr ""
+
+msgid "System settings have been updated."
+msgstr ""
+
+msgid "Predefined models"
+msgstr ""
+
+msgid "Select a model"
+msgstr ""
+
+msgid "Switcher display format"
+msgstr ""
+
+msgid "Switcher HTML code:"
+msgstr ""
+
+msgid "Item HTML code:"
+msgstr ""
+
+msgid "Active item HTML code:"
+msgstr ""
+
+msgid "Excluded themes:"
+msgstr ""
+
+msgid "Semicolon separated list of themes IDs (theme folder name). Ex: ductile;berlin"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Restore defaults"
+msgstr ""
+
+msgid "Bullets list"
+msgstr ""
+
+msgid "Scrolled list"
+msgstr ""
+
+msgid "ok"
+msgstr ""
+
+msgid "active theme"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Theme switcher"
+msgstr ""
+
+msgid "Choose a theme"
+msgstr ""

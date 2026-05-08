@@ -39,20 +39,41 @@ class Widgets
 
     public static function parseWidget(WidgetsElement $w): string
     {
-        if ($w->offline || !$w->checkHomeOnly(App::url()->type)) {
+        if ($w->offline || !$w->checkHomeOnly(App::url()->getType())) {
             return '';
         }
 
-        $model   = json_decode((string) My::settings()->get('model'), true);
-        $exclude = explode(';', (string) My::settings()->get('exclude'));
-        $modules = array_diff_key(App::themes()->getDefines(['state' => ModuleDefine::STATE_ENABLED], true), array_flip($exclude));
-        if (!is_array($model) || empty($modules)) {
+        $settings = My::settings();
+
+        /**
+         * @var array{name: string, s_html: string, e_html: string, a_html: string} $model
+         */
+        $model    = is_string($model = $settings->get('model')) ? json_decode($model, true) : My::defaultModel();
+        $excluded = is_string($excluded = $settings->get('exclude')) ? explode(';', $excluded) : [];
+
+        $themes = array_diff_key(App::themes()->getDefines(['state' => ModuleDefine::STATE_ENABLED], true), array_flip($excluded));
+
+        if ($themes === []) {
             return '';
         }
+
+        /**
+         * @var array<string, string>
+         */
+        $list = [];
+        foreach ($themes as $id => $module) {
+            $name = isset($module['name']) && is_string($name = $module['name']) ? $name : '';
+            if ($name !== '') {
+                $list[$name] = $id;
+            }
+        }
+
+        App::lexical()->lexicalKeySort($list, App::lexical()::PUBLIC_LOCALE);
 
         # Current page URL and the associated query string. Note : the URL for
         # the switcher ($s_url) is different to the URL for an item ($e_url)
-        $s_url = $e_url = Http::getSelfURI();
+        $s_url = Http::getSelfURI();
+        $e_url = $s_url;
 
         # If theme setting is already present in URL, we will replace its value
         $replace = preg_match('/(\\?|&)theme\\=[^&]*/', $e_url);
@@ -60,44 +81,45 @@ class Widgets
         # URI extension to send theme setting by query string
         if ($replace) {
             $ext = '';
-        } elseif (strpos($e_url, '?') === false) {
+        } elseif (!str_contains($e_url, '?')) {
             $ext = '?theme=';
         } else {
-            $ext = (substr($e_url, -1) == '?' ? '' : '&amp;') . 'theme=';
+            $ext = (str_ends_with($e_url, '?') ? '' : '&amp;') . 'theme=';
         }
 
         $res = '';
-        foreach ($modules as $id => $module) {
-            $id = (string) $id;
-            if ($id == App::frontend()->theme) {
-                $format = $model['a_html'];
-            } else {
-                $format = $model['e_html'];
-            }
+        foreach ($list as $id) {
+            $format = $id === App::frontend()->theme ? $model['a_html'] : $model['e_html'];
 
             if ($replace) {
                 $e_url = preg_replace(
                     '/(\\?|&)(theme\\=)([^&]*)/',
-                    '$1${2}' . addcslashes($id, '$\\'),
+                    '$1${2}' . addcslashes((string) $id, '$\\'),
                     (string) $e_url
                 );
                 $val = '';
             } else {
-                $val = Html::escapeHTML(rawurlencode($id));
+                $val = Html::escapeHTML(rawurlencode((string) $id));
             }
-            $res .= sprintf(
-                $format,
-                $e_url,
-                $ext,
-                $val,
-                Html::escapeHTML($module['name']),
-                Html::escapeHTML($module['desc']),
-                Html::escapeHTML($id)
-            );
+
+            $name = isset($themes[$id]['name']) && is_string($name = $themes[$id]['name']) ? $name : '';
+            $desc = isset($themes[$id]['name']) && is_string($desc = $themes[$id]['desc']) ? $desc : '';
+
+            if ($name !== '') {
+                $res .= sprintf(
+                    $format,
+                    $e_url,
+                    $ext,
+                    $val,
+                    Html::escapeHTML($name),
+                    Html::escapeHTML($desc),
+                    Html::escapeHTML($id)
+                );
+            }
         }
 
         # Nothing to display
-        if (!trim($res)) {
+        if (trim($res) === '') {
             return '';
         }
 

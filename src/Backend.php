@@ -7,6 +7,7 @@ namespace Dotclear\Plugin\arlequin;
 use Dotclear\App;
 use Dotclear\Helper\Process\TraitProcess;
 use Dotclear\Core\Backend\Favorites;
+use Dotclear\Core\Backend\Menus;
 
 /**
  * @brief       arlequin backend class.
@@ -31,7 +32,7 @@ class Backend
             return false;
         }
 
-        My::addBackendMenuItem(App::backend()->menus()::MENU_BLOG);
+        My::addBackendMenuItem(Menus::MENU_BLOG);
 
         App::behavior()->addBehaviors([
             'adminDashboardFavoritesV2' => function (Favorites $favs): void {

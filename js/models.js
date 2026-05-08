@@ -1,82 +1,73 @@
-/* -*- tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-/***************************************************************\
- *  This is 'Arlequin', a plugin for Dotclear 2                *
- *                                                             *
- *  Copyright (c) 2007,2015                                    *
- *  Oleksandr Syenchuk and contributors.                       *
- *                                                             *
- *  This is an open source software, distributed under the GNU *
- *  General Public License (version 2) terms and  conditions.  *
- *                                                             *
- *  You should have received a copy of the GNU General Public  *
- *  License along 'Arlequin' (see COPYING.txt);                *
- *  if not, write to the Free Software Foundation, Inc.,       *
- *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    *
-\***************************************************************/
+/*global dotclear */
+'use strict';
 
-var arlequin = {
-	msg : {
-		predefined_models : 'Generic models',
-		select_model : 'Select a generic model:',
-		user_defined : 'User defined'
-	},
-	
-	models : Array(),
-	
-	addModel : function(model_name, s_html, e_html, a_html) {
-		model = new Array(model_name,s_html,e_html,a_html);
-		arlequin.models.push(model);
-	},
-	
-	addDefault : function() {
-		arlequin.addModel(arlequin.msg.user_defined,
-			$("#s_html").val(),
-			$("#e_html").val(),
-			$("#a_html").val());
-	},
-	
-	drawInterface : function() {
-		if (!arlequin.models.length) {
-			return;
-		}
-		
-		res = '';
-		res += '<p>'+arlequin.msg.select_model+' ';
-		res += '<select id="mt_model">';
-		for (i in arlequin.models) {
-			res += '<option value="'+i+'">'
-				+ arlequin.models[i][0]+'</option>';
-		}
-		res += '</select>';
-		res += '</p>';
-		
-		return res;
-	},
-	
-	selectModel : function(id) {
-		if (!arlequin.models[id]) { return; }
-		
-		$("#s_html").val(arlequin.models[id][1]);
-		$("#e_html").val(arlequin.models[id][2]);
-		$("#a_html").val(arlequin.models[id][3]);
-	}
-};
+dotclear.ready(() => {
+  const models = document.getElementById('models');
+  if (!models) {
+    return;
+  }
 
+  const selector = document.getElementById('s_html');
+  const item = document.getElementById('e_html');
+  const active_item = document.getElementById('a_html');
 
-$(function() {
-	if (!document.getElementById || !document.getElementById('models')) { return; }
-	
-	var c = $('#models');
-	c.html('<p><a id="model-control" class="form-control" style="display:inline;" href="#">'+
-		arlequin.msg.predefined_models+'</a></p>');
-	
-	$('#model-control').click(function() {
-		c.html(arlequin.drawInterface());
-		
-		$('#mt_model').change(function() {
-			arlequin.selectModel(this.value);
-		});
-		
-		return false;
-	});
+  const arlequin = {
+    msg: {
+      predefined_models: 'Generic models',
+      select_model: 'Select a generic model:',
+      user_defined: 'User defined',
+    },
+
+    models: new Array(),
+
+    addModel(model_name, s_html, e_html, a_html) {
+      const model = new Array(model_name, s_html, e_html, a_html);
+      arlequin.models.push(model);
+    },
+
+    addDefault() {
+      arlequin.addModel(data.msg.user_defined, selector.value, item.value, active_item.value);
+    },
+
+    drawInterface() {
+      if (!arlequin.models.length) {
+        return;
+      }
+
+      let res = '';
+      res += `<p>${data.msg.select_model} `;
+      res += '<select id="mt_model">';
+      for (const i in arlequin.models) {
+        res += `<option value="${i}">${arlequin.models[i][0]}</option>`;
+      }
+      res += '</select>';
+      res += '</p>';
+
+      return res;
+    },
+
+    selectModel(id) {
+      if (!arlequin.models[id]) {
+        return;
+      }
+
+      selector.value = arlequin.models[id][1];
+      item.value = arlequin.models[id][2];
+      active_item.value = arlequin.models[id][3];
+    },
+  };
+
+  // Get data
+  const data = dotclear.getData('arlequin');
+
+  arlequin.addDefault();
+  for (const model of data.models) {
+    arlequin.addModel(model.name, model.s_html, model.e_html, model.a_html);
+  }
+
+  models.innerHTML = arlequin.drawInterface();
+
+  const choice = document.getElementById('mt_model');
+
+  choice.addEventListener('change', (event) => arlequin.selectModel(event.currentTarget.value));
 });
