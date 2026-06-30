@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * @brief       The plugin arlequin definition
@@ -20,7 +21,7 @@ $this->registerModule(
     'Oleksandr Syenchuk, Pierre Van Glabeke and contributors',
     '2.37',
     [
-        'requires'    => [['core', '2.37']],
+        'requires'    => [['core', '2.39']],
         'permissions' => 'My',
         'type'        => 'plugin',
         'support'     => 'https://github.com/JcDenis/' . $this->id . '/issues',

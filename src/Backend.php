@@ -37,11 +37,11 @@ class Backend
         App::behavior()->addBehaviors([
             'adminDashboardFavoritesV2' => function (Favorites $favs): void {
                 $favs->register(My::id(), [
-                    'title'       => My::name(),
-                    'url'         => My::manageUrl(),
-                    'small-icon'  => My::icons(),
-                    'large-icon'  => My::icons(),
-                    'permissions' => App::auth()->makePermissions([
+                    'title'          => My::name(),
+                    'url'            => My::manageUrl(),
+                    'menu-icon'      => My::icon(),
+                    'dashboard-icon' => My::icon(),
+                    'permissions'    => App::auth()->makePermissions([
                         App::auth()::PERMISSION_CONTENT_ADMIN,
                     ]),
                 ]);
